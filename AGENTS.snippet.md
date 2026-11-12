@@ -1,12 +1,12 @@
-## Git Flow e versionamento
+## Git Flow and versioning
 
-Este projeto usa Git Flow manual (sem a CLI `git-flow`) com SemVer.
-Ao pedirem feature, release, hotfix, bump de versão, tag ou setup de branches, **leia e siga `.claude/skills/git-flow/SKILL.md`** (ajuste o caminho para onde a pasta `git-flow/` está neste repositório) e os arquivos de `references/` que ele indicar.
+This project uses manual Git Flow (no `git-flow` CLI) with SemVer.
+When asked for a feature, release, hotfix, version bump, tag or branch setup, **read and follow `.claude/skills/git-flow/SKILL.md`** (adjust the path to wherever the `git-flow/` folder lives in this repository) and the `references/` files it points to.
 
-Resumo das regras:
+Rule summary:
 
-- Branches: `main` (produção), `develop` (integração), `feature/<nome>`, `release/X.Y.Z`, `hotfix/X.Y.Z`
-- Tag anotada `X.Y.Z` criada na `main`; merges de integração sempre `--no-ff`
-- Antes de qualquer passo, rode `bash .claude/skills/git-flow/scripts/gitflow-status.sh` (somente leitura)
-- Nunca fazer push, tag remota, GitHub Release, `--force` ou apagar branch remota sem pedido explícito do usuário
-- Convenções do time (prefixo de tag, arquivo de versão etc.) ficam em `.gitflow`, se existir
+- Branches: `main` (production), `develop` (integration), `feature/<name>`, `release/X.Y.Z`, `hotfix/X.Y.Z`
+- Annotated tag `X.Y.Z` created on `main`; integration merges always `--no-ff`
+- Before any step, run `bash .claude/skills/git-flow/scripts/gitflow-status.sh` (read-only)
+- Never push, push a tag, create a GitHub Release, use `--force` or delete a remote branch without an explicit request from the user
+- Team conventions (tag prefix, version file, etc.) live in `.gitflow`, if present

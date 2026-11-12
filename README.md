@@ -1,62 +1,64 @@
 # git-flow-skill
 
-Skill de agente para aplicar o **Git Flow** com versionamento **SemVer** em qualquer projeto: cria features, releases e hotfixes, faz o bump de versão, cria tags anotadas e, se o repositório ainda não tem `develop`, tag base ou convenções, **ajuda a montar o setup**.
+🇺🇸 **English** · 🇧🇷 [Português (Brasil)](README.pt-BR.md)
 
-Funciona em **Claude Code**, **opencode**, **Codex**, **Cursor**, **Gemini CLI** e outros agentes que seguem o formato aberto *Agent Skills* (`SKILL.md` + `scripts/` + `references/`).
+An agent skill that applies **Git Flow** with **SemVer** versioning in any project: it creates features, releases and hotfixes, bumps the version, creates annotated tags and, if the repository doesn't yet have a `develop` branch, a base tag or team conventions, **helps you set them up**.
 
-Baseada no modelo de Vincent Driessen, no [artigo da Alura sobre Git Flow](https://www.alura.com.br/artigos/git-flow-o-que-e-como-quando-utilizar) e na skill `git-flow-versionamento` do projeto Kineto, generalizada para qualquer stack.
+Works with **Claude Code**, **opencode**, **Codex**, **Cursor**, **Gemini CLI** and other agents that follow the open *Agent Skills* format (`SKILL.md` + `scripts/` + `references/`).
 
-> Fluxo **manual**, só com comandos `git` (sem a CLI `git-flow`). Requer `git` e `bash` (no Windows, o Git Bash que já vem com o Git). O `gh` (GitHub CLI) é opcional, para PRs, proteção de branches e GitHub Releases.
+Based on Vincent Driessen's branching model, on [Alura's article about Git Flow](https://www.alura.com.br/artigos/git-flow-o-que-e-como-quando-utilizar) and on the `git-flow-versionamento` skill from the Kineto project, generalized for any stack.
+
+> **Manual** flow using plain `git` commands (no `git-flow` CLI). Requires `git` and `bash` (on Windows, the Git Bash that ships with Git). The `gh` CLI (GitHub CLI) is optional, for PRs, branch protection and GitHub Releases. The skill replies in whatever language you write in.
 
 ---
 
-## Instalação
+## Installation
 
 ### Claude Code
 
-#### Opção 1 — `npx skills` (recomendada)
+#### Option 1 — `npx skills` (recommended)
 
 ```bash
-npx skills add GabrielRochaFC/git-flow-skill            # no projeto atual (o time pode commitar)
-npx skills add GabrielRochaFC/git-flow-skill --global   # para todos os seus projetos
+npx skills add GabrielRochaFC/git-flow-skill            # current project (your team can commit it)
+npx skills add GabrielRochaFC/git-flow-skill --global   # all your projects
 ```
 
-#### Opção 2 — Plugin marketplace do Claude Code
+#### Option 2 — Claude Code plugin marketplace
 
-Dentro do Claude Code:
+Inside Claude Code:
 
 ```text
 /plugin marketplace add GabrielRochaFC/git-flow-skill
 /plugin install git-flow@git-flow-skill
 ```
 
-Ou pelo terminal:
+Or from the terminal:
 
 ```bash
 claude plugin marketplace add GabrielRochaFC/git-flow-skill
 claude plugin install git-flow@git-flow-skill
 ```
 
-Instalada como plugin, a skill também pode ser chamada como `/git-flow:git-flow`. Atualizações chegam pelo marketplace quando a `version` do plugin sobe (veja "Desenvolvimento").
+Installed as a plugin, the skill can also be invoked as `/git-flow:git-flow`. Updates arrive through the marketplace when the plugin `version` is bumped (see "Development").
 
-### Outros agentes (opencode, Codex, Cursor, Gemini CLI…)
+### Other agents (opencode, Codex, Cursor, Gemini CLI…)
 
-O `npx skills` instala nos diretórios de cada agente:
+`npx skills` installs into each agent's own directories:
 
 ```bash
-npx skills add GabrielRochaFC/git-flow-skill --list            # só lista o que há no repo
-npx skills add GabrielRochaFC/git-flow-skill -a opencode       # escolhendo o agente
+npx skills add GabrielRochaFC/git-flow-skill --list            # just list what's in the repo
+npx skills add GabrielRochaFC/git-flow-skill -a opencode       # pick an agent
 npx skills add GabrielRochaFC/git-flow-skill -a codex cursor
 ```
 
-### Instalação manual (qualquer agente)
+### Manual install (any agent)
 
-Copie a pasta **inteira** `skills/git-flow/` para o diretório de skills da ferramenta (o `SKILL.md` referencia o script e os arquivos de `references/`; o nome da pasta deve continuar `git-flow`):
+Copy the **whole** `skills/git-flow/` folder into the tool's skills directory (`SKILL.md` references the script and the `references/` files; the folder name must stay `git-flow`):
 
-| Agente | Projeto (commite para o time) | Pessoal (todos os projetos) |
+| Agent | Project (commit it for the team) | Personal (all projects) |
 |---|---|---|
 | Claude Code | `.claude/skills/git-flow/` | `~/.claude/skills/git-flow/` |
-| opencode | `.opencode/skills/git-flow/` (também lê `.claude/skills/` e `.agents/skills/`) | `~/.config/opencode/skills/git-flow/` |
+| opencode | `.opencode/skills/git-flow/` (also reads `.claude/skills/` and `.agents/skills/`) | `~/.config/opencode/skills/git-flow/` |
 | Codex | `.agents/skills/git-flow/` | `~/.agents/skills/git-flow/` |
 | Cursor | `.cursor/skills/git-flow/` | `~/.cursor/skills/git-flow/` |
 | Gemini CLI | `.gemini/skills/git-flow/` | `~/.gemini/skills/git-flow/` |
@@ -66,94 +68,95 @@ git clone https://github.com/GabrielRochaFC/git-flow-skill.git
 mkdir -p .claude/skills && cp -r git-flow-skill/skills/git-flow .claude/skills/
 ```
 
-> Caminhos conforme a documentação de cada ferramenta em nov/2026. Se algum agente mudar o diretório, vale a regra geral: uma pasta com `SKILL.md` dentro do diretório de skills da ferramenta.
+> Paths follow each tool's documentation as of Nov 2026. If an agent changes its directory, the general rule still holds: a folder containing `SKILL.md` inside the tool's skills directory.
 
-### Pacote `.zip` (instalação por upload)
+### `.zip` package (install by upload)
 
 ```bash
-python3 scripts/package_skill.py     # gera dist/git-flow.zip e dist/git-flow.skill
+python3 scripts/package_skill.py     # builds dist/git-flow.zip and dist/git-flow.skill
 ```
 
-O zip contém a pasta `git-flow/` na raiz, pronta para ser enviada por upload ou descompactada num diretório de skills. Ao publicar uma Release no GitHub, anexe esses arquivos.
+The zip has the `git-flow/` folder at its root, ready to upload or unzip into a skills directory. When you publish a GitHub Release, attach these files.
 
-### Agentes sem suporte a skills
+### Agents without skills support
 
-Copie `AGENTS.snippet.md` para o `AGENTS.md` do projeto (ou `.github/copilot-instructions.md`, `GEMINI.md` etc.) e mantenha a pasta `git-flow/` no repositório, ajustando o caminho no snippet.
+Copy `AGENTS.snippet.md` into the project's `AGENTS.md` (or `.github/copilot-instructions.md`, `GEMINI.md`, etc.) and keep the `git-flow/` folder in the repository, adjusting the path in the snippet.
 
 ---
 
-## Como usar
+## Usage
 
-Basta pedir em linguagem natural; o agente carrega a skill sozinho:
+Just ask in natural language; the agent loads the skill on its own:
 
-- "configura o git flow neste projeto" → setup (cria `develop`, tag base e `.gitflow`)
-- "cria a feature de login" → `feature/login` a partir da `develop`
-- "vamos fazer a release 1.3.0" → `release/1.3.0`, bump, merge na `main`, tag e volta para a `develop`
-- "preciso de um hotfix" → `hotfix/X.Y.Z` a partir da `main`
-- "qual o estado do git flow?" → diagnóstico somente leitura
+- "set up git flow in this project" → setup (creates `develop`, a base tag and `.gitflow`)
+- "create the login feature" → `feature/login` from `develop`
+- "let's do release 1.3.0" → `release/1.3.0`, bump, merge into `main`, tag, back-merge into `develop`
+- "I need a hotfix" → `hotfix/X.Y.Z` from `main`
+- "what's the git flow status?" → read-only diagnosis
 
-Também dá para rodar o diagnóstico sozinho em qualquer repositório:
+You can also run the diagnosis on its own in any repository:
 
 ```bash
 bash .claude/skills/git-flow/scripts/gitflow-status.sh
 ```
 
-## O que a skill faz
+## What the skill does
 
-| Branch | Nasce de | Volta para |
+| Branch | Created from | Merged back into |
 |---|---|---|
-| `main` (produção, cada commit = versão com tag) | — | — |
-| `develop` (integração) | `main` | — |
-| `feature/<nome>` | `develop` | `develop` |
-| `release/X.Y.Z` | `develop` | `main` e `develop` |
-| `hotfix/X.Y.Z` | `main` | `main` e `develop` |
+| `main` (production, every commit = a tagged version) | — | — |
+| `develop` (integration) | `main` | — |
+| `feature/<name>` | `develop` | `develop` |
+| `release/X.Y.Z` | `develop` | `main` and `develop` |
+| `hotfix/X.Y.Z` | `main` | `main` and `develop` |
 
-- Tags **anotadas** `X.Y.Z` criadas na `main`; merges de integração sempre `--no-ff`; commit de bump `chore: bump version to X.Y.Z`.
-- **Setup:** se não existir `develop`, tag base ou convenções, a skill conduz a criação (perguntando antes de qualquer ação com efeito remoto) e sugere proteção de branches e CI.
-- **Genérica:** autodetecta `main`/`master`, o prefixo `v` nas tags e o arquivo de versão (`package.json`, `pyproject.toml`, `Cargo.toml`, `composer.json`, `VERSION`) ou usa só tag.
-- **Branches protegidas:** com `main`/`develop` protegidas, usa o fluxo por Pull Request.
+- **Annotated** `X.Y.Z` tags created on `main`; integration merges always `--no-ff`; bump commit `chore: bump version to X.Y.Z`.
+- **Setup:** if `develop`, a base tag or conventions are missing, the skill walks you through creating them (asking before any action with a remote effect) and suggests branch protection and CI.
+- **Generic:** autodetects `main`/`master`, the `v` tag prefix and the version file (`package.json`, `pyproject.toml`, `Cargo.toml`, `composer.json`, `VERSION`), or uses the tag alone.
+- **Protected branches:** with protected `main`/`develop`, it uses the Pull Request flow.
 
-### Convenções do time (`.gitflow`)
+### Team conventions (`.gitflow`)
 
-Para todos usarem o mesmo padrão (prefixo de tag, arquivo de versão, PR × merge local, changelog), crie um `.gitflow` na raiz do projeto e commite na `develop`. A skill oferece criá-lo no setup. Modelo e chaves em [`skills/git-flow/references/conventions.md`](skills/git-flow/references/conventions.md).
+So everyone follows the same pattern (tag prefix, version file, PR vs local merge, changelog), create a `.gitflow` at the project root and commit it to `develop`. The skill offers to create it during setup. Template and keys in [`skills/git-flow/references/conventions.md`](skills/git-flow/references/conventions.md).
 
-### Segurança embutida
+### Built-in safety
 
-O agente **não** faz `push`, tag remota, GitHub Release nem apaga branch remota sem você pedir; não usa `--force` em `main`/`develop`; para em conflitos; só mergeia com árvore limpa. Regras completas no [`SKILL.md`](skills/git-flow/SKILL.md).
+The agent will **not** `push`, push tags, create a GitHub Release or delete a remote branch unless you ask; it won't use `--force` on `main`/`develop`; it stops on conflicts; and it only merges with a clean working tree. Full rules in [`SKILL.md`](skills/git-flow/SKILL.md).
 
-### Quando não usar Git Flow
+### When not to use Git Flow
 
-Em entrega contínua (vários deploys por dia), o próprio autor do modelo recomenda GitHub Flow ou trunk-based. A skill avisa disso uma vez e respeita a sua decisão.
+With continuous delivery (several deploys a day), the model's own author recommends GitHub Flow or trunk-based development. The skill mentions this once and respects your decision.
 
 ---
 
-## Estrutura do repositório
+## Repository layout
 
 ```
 .
 ├── .claude-plugin/
-│   ├── marketplace.json          # catálogo para /plugin marketplace add
-│   └── plugin.json               # manifesto do plugin (versão, autor)
+│   ├── marketplace.json          # catalog for /plugin marketplace add
+│   └── plugin.json               # plugin manifest (version, author)
 ├── skills/git-flow/
-│   ├── SKILL.md                  # instruções principais
-│   ├── scripts/gitflow-status.sh # diagnóstico somente leitura
-│   └── references/               # setup, convenções, hotfix e release por PR
-├── scripts/package_skill.py      # gera dist/git-flow.zip
-├── AGENTS.snippet.md             # fallback para agentes sem skills
+│   ├── SKILL.md                  # main instructions
+│   ├── scripts/gitflow-status.sh # read-only diagnosis
+│   └── references/               # setup, conventions, hotfix and release via PR
+├── scripts/package_skill.py      # builds dist/git-flow.zip
+├── AGENTS.snippet.md             # fallback for agents without skills support
 ├── LICENSE
-└── README.md
+├── README.md                     # English
+└── README.pt-BR.md               # Português (Brasil)
 ```
 
-## Desenvolvimento
+## Development
 
 ```bash
-claude plugin validate .          # valida marketplace.json e plugin.json
+claude plugin validate .          # validates marketplace.json and plugin.json
 bash skills/git-flow/scripts/gitflow-status.sh
 python3 scripts/package_skill.py
 ```
 
-Ao lançar uma versão nova, suba o campo `version` em `.claude-plugin/plugin.json` (quem instalou como plugin só recebe a atualização assim) e crie a tag e a Release correspondentes.
+When you ship a new version, bump `version` in `.claude-plugin/plugin.json` (plugin users only receive the update that way) and create the matching tag and Release.
 
-## Licença
+## License
 
-MIT. Veja [LICENSE](LICENSE).
+MIT. See [LICENSE](LICENSE).

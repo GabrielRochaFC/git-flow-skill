@@ -1,26 +1,26 @@
-# Hotfix, release por PR e recuperação de erros
+# Hotfix, release via PR and error recovery
 
-Notação: `<MAIN>`, `<DEV>`, `<TAG>` = `<prefixo>X.Y.Z` (como em `SKILL.md`). Todas as regras de segurança do `SKILL.md` continuam valendo (nada de push/tag remota/release sem pedido explícito).
+Notation: `<MAIN>`, `<DEV>`, `<TAG>` = `<prefix>X.Y.Z` (as in `SKILL.md`). All safety rules from `SKILL.md` still apply (no push / remote tag / release without an explicit request).
 
-## Hotfix (correção urgente em produção)
+## Hotfix (urgent production fix)
 
-Versão do hotfix = PATCH+1 da última tag na `main`.
+Hotfix version = PATCH+1 of the latest tag on `main`.
 
 ```bash
 # start
 git checkout <MAIN> && git pull origin <MAIN>
 git checkout -b hotfix/X.Y.Z <MAIN>
-# ...commits da correção (só o necessário)...
-# bump do arquivo de versão (ver conventions.md)
-git add <arquivo-de-versao> [lockfile]
+# ...commits with the fix (only what's necessary)...
+# bump the version file (see conventions.md)
+git add <version-file> [lockfile]
 git commit -m "chore: bump version to X.Y.Z"
 
-# finish (equivale a git flow hotfix finish)
+# finish (equivalent to git flow hotfix finish)
 git checkout <MAIN>
 git merge --no-ff hotfix/X.Y.Z -m "Merge branch 'hotfix/X.Y.Z'"
 git tag -a <TAG> -m "Hotfix X.Y.Z"
 
-# back-merge: o bug também existe na develop
+# back-merge: the bug exists on develop too
 git checkout <DEV>
 git merge --no-ff hotfix/X.Y.Z -m "Merge branch 'hotfix/X.Y.Z'"
 git merge <TAG> -m "Merge tag '<TAG>' into <DEV>"
@@ -28,53 +28,53 @@ git merge <TAG> -m "Merge tag '<TAG>' into <DEV>"
 git branch -d hotfix/X.Y.Z
 ```
 
-**Se há uma `release/A.B.C` aberta**, o back-merge do hotfix vai para ela (e não para a `develop`); a `develop` receberá a correção quando a release for finalizada. Pergunte ao usuário qual caminho seguir.
+**If a `release/A.B.C` branch is open**, the hotfix back-merge goes into it (not into `develop`); `develop` receives the fix when that release is finished. Ask the user which path to follow.
 
-Depois, com autorização: `git push origin <MAIN> <DEV> <TAG>`.
+Afterwards, with permission: `git push origin <MAIN> <DEV> <TAG>`.
 
-## Release/hotfix com branches protegidas (fluxo por PR)
+## Release/hotfix with protected branches (PR flow)
 
-Quando `PROTECTED_BRANCHES=true` (ou o push direto em `main`/`develop` for recusado), nada é mergeado localmente nessas branches. Fluxo:
+When `PROTECTED_BRANCHES=true` (or a direct push to `main`/`develop` is rejected), nothing is merged locally into those branches. Flow:
 
-1. `release/X.Y.Z` criada a partir da `develop` e publicada (com autorização): `git push -u origin release/X.Y.Z`
-2. Abrir **PR `release/X.Y.Z` → `<MAIN>`** (`gh pr create --base <MAIN> --head release/X.Y.Z --title "Release X.Y.Z"`). Usar **merge commit** (não squash/rebase), para preservar o histórico.
-3. Depois que o PR for mergeado, **a tag nasce no merge commit da `main`**:
+1. `release/X.Y.Z` is created from `develop` and published (with permission): `git push -u origin release/X.Y.Z`
+2. Open a **PR `release/X.Y.Z` → `<MAIN>`** (`gh pr create --base <MAIN> --head release/X.Y.Z --title "Release X.Y.Z"`). Use a **merge commit** (not squash/rebase) to preserve history.
+3. Once the PR is merged, **the tag is created on the merge commit of `main`**:
    ```bash
    git fetch origin
    git checkout <MAIN> && git pull origin <MAIN>
    git tag -a <TAG> -m "Release X.Y.Z"
-   git push origin <TAG>          # com autorização
+   git push origin <TAG>          # with permission
    ```
-4. Abrir **PR `<MAIN>` → `<DEV>`** (ou `release/X.Y.Z` → `<DEV>`) para a `develop` receber a release. Também com merge commit.
-5. Apagar a `release/X.Y.Z` (local com `-d`; remota só com autorização).
+4. Open a **PR `<MAIN>` → `<DEV>`** (or `release/X.Y.Z` → `<DEV>`) so `develop` receives the release. Also with a merge commit.
+5. Delete `release/X.Y.Z` (local with `-d`; remote only with permission).
 
-Hotfix segue o mesmo desenho: `hotfix/X.Y.Z` → PR para `<MAIN>`, tag, PR de volta para `<DEV>`.
+A hotfix follows the same shape: `hotfix/X.Y.Z` → PR into `<MAIN>`, tag, PR back into `<DEV>`.
 
-## Conflitos
+## Conflicts
 
-- Durante qualquer merge com conflito: `git status` para listar; **mostrar ao usuário** e perguntar como resolver.
-- Resolvidos os arquivos: `git add <arquivos>` + `git commit` (mantém a mensagem de merge padrão).
-- Desistir: `git merge --abort` (seguro, volta ao estado anterior ao merge).
-- Conflito típico no back-merge para `develop`: o arquivo de versão (a `develop` ainda tem a versão antiga). Resolver mantendo a versão **nova** da release/hotfix.
+- During any merge with conflicts: `git status` to list them; **show them to the user** and ask how to resolve.
+- Once the files are resolved: `git add <files>` + `git commit` (keeps the default merge message).
+- To give up: `git merge --abort` (safe, goes back to the state before the merge).
+- Typical conflict in the back-merge into `develop`: the version file (`develop` still has the old version). Resolve by keeping the **new** version from the release/hotfix.
 
-## Recuperação de erros comuns (confirmar antes de executar)
+## Recovering from common mistakes (confirm before running)
 
-| Situação | Solução |
+| Situation | Fix |
 |---|---|
-| Tag criada local no lugar errado/leve, **ainda não enviada** | `git tag -d <TAG>` e recriar com `git tag -a <TAG> -m "..." <commit-da-main>` |
-| Tag já enviada ao remoto com erro | Não reescreva sem alinhar com o time. Opção segura: nova versão PATCH. Reescrever exige `git push origin :refs/tags/<TAG>` e **autorização explícita** |
-| Merge na branch errada, **ainda não enviado** | `git reset --hard ORIG_HEAD` logo após o merge (descarta o merge local; pedir confirmação) |
-| Esqueceu o back-merge na `develop` | `git checkout <DEV> && git merge --no-ff <MAIN>` (ou o merge da tag) |
-| `branch -d` recusa ("not fully merged") | Verificar se foi squash/PR; se o conteúdo já está na `develop`, usar `-D` **com confirmação** |
-| `main` e `develop` com versões diferentes após release | Conferir `gitflow-status.sh`; o arquivo de versão da `develop` deve igualar a última release após o back-merge |
+| Tag created locally in the wrong place / lightweight, **not pushed yet** | `git tag -d <TAG>` and recreate with `git tag -a <TAG> -m "..." <commit-on-main>` |
+| Tag already pushed with a mistake | Don't rewrite it without aligning with the team. Safe option: a new PATCH version. Rewriting needs `git push origin :refs/tags/<TAG>` and **explicit permission** |
+| Merged into the wrong branch, **not pushed yet** | `git reset --hard ORIG_HEAD` right after the merge (discards the local merge; ask for confirmation) |
+| Forgot the back-merge into `develop` | `git checkout <DEV> && git merge --no-ff <MAIN>` (or merge the tag) |
+| `branch -d` refuses ("not fully merged") | Check whether it was squashed via PR; if the content is already in `develop`, use `-D` **with confirmation** |
+| `main` and `develop` have different versions after a release | Check `gitflow-status.sh`; `develop`'s version file should match the latest release after the back-merge |
 
-## GitHub Release (opcional)
+## GitHub Release (optional)
 
 ```bash
 gh release create <TAG> --title "<TAG>" --notes "- item 1
 - item 2"
-# ou a partir de um arquivo revisado pelo usuário:
+# or from a file the user has reviewed:
 gh release create <TAG> --title "<TAG>" --notes-file notes.md
 ```
 
-Rascunho das notas: `git log --no-merges --pretty='- %s' <tag-anterior>..<TAG>`. Mostre ao usuário e publique só depois do OK. Se `gh` não estiver instalado/autenticado, passe o texto das notas para o usuário colar na interface do GitHub.
+Draft the notes with: `git log --no-merges --pretty='- %s' <previous-tag>..<TAG>`. Show them to the user and publish only after their OK. If `gh` isn't installed/authenticated, hand the notes text to the user to paste in the GitHub UI.

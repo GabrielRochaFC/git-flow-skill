@@ -1,60 +1,60 @@
-# Convenções do projeto (`.gitflow`) e bump de versão
+# Project conventions (`.gitflow`) and version bumps
 
-## Arquivo `.gitflow`
+## The `.gitflow` file
 
-Arquivo opcional na raiz do repositório, formato `CHAVE=valor`, comentários com `#`. **Commite-o** para o time todo (e todos os agentes) seguirem o mesmo padrão. Chaves ausentes usam o default/autodetecção.
+Optional file at the repository root, `KEY=value` format, comments with `#`. **Commit it** so the whole team (and every agent) follows the same pattern. Missing keys fall back to the default/autodetection.
 
 ```ini
-# .gitflow — convenções de Git Flow deste repositório
-MAIN_BRANCH=main            # branch de produção (main | master)
-DEVELOP_BRANCH=develop      # branch de integração
-TAG_PREFIX=                 # vazio -> 1.2.0 | v -> v1.2.0
-VERSION_FILE=package.json   # package.json | pyproject.toml | Cargo.toml | composer.json | VERSION | (vazio = só tag)
-FEATURE_MERGE=pr            # pr (Pull Request) | local (merge --no-ff local)
-CHANGELOG=false             # true -> manter CHANGELOG.md na release
-GITHUB_RELEASE=true         # true -> oferecer gh release create
-PROTECTED_BRANCHES=false    # true -> main/develop só aceitam PR (usar fluxo por PR)
+# .gitflow — Git Flow conventions for this repository
+MAIN_BRANCH=main            # production branch (main | master)
+DEVELOP_BRANCH=develop      # integration branch
+TAG_PREFIX=                 # empty -> 1.2.0 | v -> v1.2.0
+VERSION_FILE=package.json   # package.json | pyproject.toml | Cargo.toml | composer.json | VERSION | (empty = tag only)
+FEATURE_MERGE=pr            # pr (Pull Request) | local (local merge --no-ff)
+CHANGELOG=false             # true -> keep CHANGELOG.md updated in the release
+GITHUB_RELEASE=true         # true -> offer gh release create
+PROTECTED_BRANCHES=false    # true -> main/develop only accept PRs (use the PR flow)
 ```
 
-`TAG_PREFIX=` (vazio) é um valor válido e **sobrescreve** a autodetecção.
+`TAG_PREFIX=` (empty) is a valid value and **overrides** autodetection.
 
-## Como fazer o bump da versão
+## How to bump the version
 
-Sempre na `release/X.Y.Z` (ou `hotfix/X.Y.Z`), em **um commit só**:
+Always on `release/X.Y.Z` (or `hotfix/X.Y.Z`), in **a single commit**:
 
 ```
 chore: bump version to X.Y.Z
 ```
 
-| Projeto | Como alterar | Arquivos no commit |
+| Project | How to change it | Files in the commit |
 |---|---|---|
-| Node (`package.json`) | `npm version X.Y.Z --no-git-tag-version` (atualiza o lock) ou editar `"version"` | `package.json` + `package-lock.json` (se mudou) |
-| Python (`pyproject.toml`) | editar `version = "X.Y.Z"` em `[project]` ou `[tool.poetry]` | `pyproject.toml` |
-| Rust (`Cargo.toml`) | editar `version = "X.Y.Z"` em `[package]`; rodar `cargo check` para atualizar o `Cargo.lock` | `Cargo.toml` + `Cargo.lock` |
-| PHP (`composer.json`) | editar `"version"` (muitos projetos nem usam; nesse caso só tag) | `composer.json` |
-| Arquivo `VERSION` | escrever `X.Y.Z` | `VERSION` |
-| Outros (Java/Gradle/.NET…) | editar o campo de versão do projeto | arquivo de build |
-| Sem arquivo de versão | **sem commit de bump**; a versão vive só na tag | — |
+| Node (`package.json`) | `npm version X.Y.Z --no-git-tag-version` (updates the lockfile) or edit `"version"` | `package.json` + `package-lock.json` (if changed) |
+| Python (`pyproject.toml`) | edit `version = "X.Y.Z"` under `[project]` or `[tool.poetry]` | `pyproject.toml` |
+| Rust (`Cargo.toml`) | edit `version = "X.Y.Z"` under `[package]`; run `cargo check` to refresh `Cargo.lock` | `Cargo.toml` + `Cargo.lock` |
+| PHP (`composer.json`) | edit `"version"` (many projects don't use it; then tag only) | `composer.json` |
+| `VERSION` file | write `X.Y.Z` | `VERSION` |
+| Others (Java/Gradle/.NET…) | edit the project's version field | the build file |
+| No version file | **no bump commit**; the version lives only in the tag | — |
 
-Regras:
+Rules:
 
-- **Nunca** use `npm version` sem `--no-git-tag-version`: ele cria commit e tag leve por conta própria e quebra o fluxo (tag deve ser anotada e ficar na `main`).
-- Depois do bump, confira com `git diff --stat HEAD~1` que só os arquivos de versão mudaram.
-- A fonte da verdade da versão é a **tag anotada**; o arquivo deve ficar igual a ela na `main`.
+- **Never** run `npm version` without `--no-git-tag-version`: it creates its own commit and lightweight tag and breaks the flow (the tag must be annotated and live on `main`).
+- After the bump, check with `git diff --stat HEAD~1` that only version files changed.
+- The source of truth for the version is the **annotated tag**; the file must match it on `main`.
 
-## Mensagens de commit
+## Commit messages
 
-O fluxo só impõe o commit de bump e as mensagens de merge:
+The flow only imposes the bump commit and the merge messages:
 
 - `chore: bump version to X.Y.Z`
 - `Merge branch 'release/X.Y.Z'` / `Merge branch 'hotfix/X.Y.Z'`
 - `Merge tag '<TAG>' into develop`
-- Tag: `Release X.Y.Z` (anotada)
+- Tag: `Release X.Y.Z` (annotated)
 
-Para os demais commits, siga o padrão do projeto. Se o time usa Conventional Commits (`feat:`, `fix:`, `feat!:`), a sugestão de bump do `gitflow-status.sh` fica mais precisa.
+For all other commits, follow the project's own pattern. If the team uses Conventional Commits (`feat:`, `fix:`, `feat!:`), the bump suggestion from `gitflow-status.sh` becomes more accurate.
 
-## Nomes de branches
+## Branch names
 
-- `feature/<descricao-em-kebab-case>` (ex.: `feature/forum-de-duvidas`); se o time usa tickets: `feature/ABC-123-forum`
-- `release/X.Y.Z` e `hotfix/X.Y.Z` — sempre **sem** `v`
-- Sem espaços, acentos ou maiúsculas
+- `feature/<description-in-kebab-case>` (e.g. `feature/question-forum`); if the team uses tickets: `feature/ABC-123-forum`
+- `release/X.Y.Z` and `hotfix/X.Y.Z` — always **without** `v`
+- No spaces, accents or uppercase letters

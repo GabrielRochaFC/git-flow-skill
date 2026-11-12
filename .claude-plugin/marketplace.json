@@ -1,6 +1,6 @@
 {
   "name": "git-flow-skill",
-  "description": "Skill de Git Flow com versionamento SemVer para agentes de código",
+  "description": "Git Flow skill with SemVer versioning for coding agents",
   "owner": {
     "name": "Gabriel Rocha"
   },
@@ -8,7 +8,7 @@
     {
       "name": "git-flow",
       "source": "./",
-      "description": "Git Flow com versionamento SemVer: feature, release, hotfix, tags anotadas e setup de branches."
+      "description": "Git Flow with SemVer versioning: feature, release, hotfix, annotated tags and branch setup."
     }
   ]
 }

@@ -1,176 +1,178 @@
 ---
 name: git-flow
-description: Aplica o Git Flow (main, develop, feature/*, release/*, hotfix/*) com versionamento SemVer e tags anotadas em qualquer projeto, e faz o setup inicial das branches quando elas ainda não existem. Use quando o usuário pedir para criar feature, release ou hotfix, finalizar release, bump de versão, criar tag, GitHub Release, configurar git flow, criar a branch develop ou organizar branches. Use when asked about git flow, release, hotfix, version bump, tagging or branch setup.
+description: Applies Git Flow (main, develop, feature/*, release/*, hotfix/*) with SemVer versioning and annotated tags in any project, and sets up the branches when they don't exist yet. Use when the user asks to create a feature, release or hotfix, finish a release, bump a version, create a tag or GitHub Release, set up git flow, create the develop branch or organize branches. Also triggers on Portuguese requests such as fazer release, hotfix, bump de versão, criar tag, configurar git flow.
 ---
 
-# Git Flow e Versionamento
+# Git Flow and Versioning
 
-Fluxo **manual** (comandos `git` puros, sem a CLI `git-flow`) baseado no modelo de Vincent Driessen. Funciona em qualquer linguagem e em qualquer agente: tudo aqui é texto + comandos de terminal.
+**Manual** flow (plain `git` commands, no `git-flow` CLI) based on Vincent Driessen's branching model. Works with any language and any agent: everything here is text plus terminal commands.
 
-## Modelo em 30 segundos
+**Reply in the language the user writes in** (these instructions are in English, but a Portuguese-speaking user gets Portuguese answers).
 
-| Branch | Tipo | Nasce de | Volta para |
+## The model in 30 seconds
+
+| Branch | Type | Created from | Merged back into |
 |---|---|---|---|
-| `main` | permanente (produção, cada commit = versão) | — | — |
-| `develop` | permanente (integração do próximo release) | `main` | — |
-| `feature/<nome>` | temporária | `develop` | `develop` (nunca direto na `main`) |
-| `release/X.Y.Z` | temporária (homologação + bump) | `develop` | `main` **e** `develop` |
-| `hotfix/X.Y.Z` | temporária (correção urgente em produção) | `main` | `main` **e** `develop` |
+| `main` | permanent (production, every commit = a version) | — | — |
+| `develop` | permanent (integration for the next release) | `main` | — |
+| `feature/<name>` | temporary | `develop` | `develop` (never straight into `main`) |
+| `release/X.Y.Z` | temporary (staging + version bump) | `develop` | `main` **and** `develop` |
+| `hotfix/X.Y.Z` | temporary (urgent production fix) | `main` | `main` **and** `develop` |
 
-Se o projeto faz **entrega contínua** (vários deploys por dia), avise **uma vez** que o próprio autor do modelo recomenda GitHub Flow ou trunk-based nesse cenário, e siga o que o usuário decidir.
+If the project does **continuous delivery** (several deploys a day), mention **once** that the model's own author recommends GitHub Flow or trunk-based development in that case, then follow whatever the user decides.
 
-## Regras de segurança (valem sempre)
+## Safety rules (always apply)
 
-1. **Nunca** faça `push`, crie tag remota, `gh release create` ou apague branch remota sem o usuário pedir **explicitamente** nesta conversa. Mostre o comando e peça confirmação.
-2. **Nunca** use `push --force` em `main`/`develop`, `reset --hard`, `clean -fd` ou `--no-verify` sem pedido explícito.
-3. Working tree precisa estar **limpa** antes de trocar de branch/mergear. Se estiver suja, pare e pergunte (commit, stash ou abortar).
-4. Em **conflito de merge**, pare, mostre os arquivos em conflito e pergunte como resolver. Não resolva "no chute".
-5. Apague branches só com `git branch -d`. Se pedir `-D`, explique por quê e confirme.
-6. Merges de integração (feature, release, hotfix): sempre `--no-ff`.
-7. Tags são **anotadas** (`git tag -a`), nascem na **main** (no merge commit da release/hotfix), nunca na `release/`.
-8. Faça `git add` só dos arquivos da tarefa (para o bump: o arquivo de versão e o lockfile, se mudou). Nada de `git add -A` às cegas.
+1. **Never** `push`, push a tag, run `gh release create` or delete a remote branch unless the user explicitly asks for it in this conversation. Show the command and ask for confirmation.
+2. **Never** use `push --force` on `main`/`develop`, `reset --hard`, `clean -fd` or `--no-verify` without an explicit request.
+3. The working tree must be **clean** before switching branches or merging. If it is dirty, stop and ask (commit, stash or abort).
+4. On a **merge conflict**, stop, list the conflicting files and ask how to resolve them. Don't guess.
+5. Delete branches only with `git branch -d`. If `-D` is needed, explain why and confirm.
+6. Integration merges (feature, release, hotfix): always `--no-ff`.
+7. Tags are **annotated** (`git tag -a`) and created on **main** (on the merge commit of the release/hotfix), never on the `release/` branch.
+8. `git add` only the files of the task (for the bump: the version file and the lockfile if it changed). No blind `git add -A`.
 
-## Passo 0 — Diagnóstico (sempre primeiro)
+## Step 0 — Diagnose (always first)
 
-Rode o script desta skill (caminho relativo à pasta da skill):
+Run this skill's script (path relative to the skill folder):
 
 ```bash
 bash scripts/gitflow-status.sh
 ```
 
-Ele é **somente leitura** e mostra: branch atual, árvore limpa/suja, convenções detectadas, se `main`/`develop` existem (local e remoto), releases/hotfixes abertos, última tag, versão no arquivo, divergência tag × versão, commits desde a última tag com **sugestão de bump** e se a `main` tem commits que a `develop` não tem.
+It is **read-only** and reports: current branch, clean/dirty tree, detected conventions, whether `main`/`develop` exist (local and remote), open releases/hotfixes, last tag, version in the version file, tag × file mismatch, commits since the last tag with a **bump suggestion**, and whether `main` has commits that `develop` lacks.
 
-Se não for possível rodar o script, faça o equivalente: `git status -sb`, `git branch -a`, `git tag --sort=-v:refname | head`, `git remote -v`.
+If the script can't run, do the equivalent by hand: `git status -sb`, `git branch -a`, `git tag --sort=-v:refname | head`, `git remote -v`.
 
-## Passo 1 — O repositório está pronto para Git Flow?
+## Step 1 — Is the repository ready for Git Flow?
 
-Se o diagnóstico mostrar `develop` ausente, repositório sem commits, sem `main`, sem tag base ou sem `.gitflow`, **leia `references/setup.md`** e conduza o setup (pergunte antes de cada ação com efeito remoto). Só siga para os fluxos abaixo quando o setup estiver completo ou o usuário disser para ignorar.
+If the diagnosis shows a missing `develop`, a repo with no commits, no `main`, no base tag or no `.gitflow` file, **read `references/setup.md`** and guide the setup (ask before every action with a remote effect). Move on to the flows below only when the setup is complete or the user says to skip it.
 
-## Convenções (defaults e como sobrescrever)
+## Conventions (defaults and how to override)
 
-| Item | Default | Detecção |
+| Item | Default | Detection |
 |---|---|---|
-| Branch de produção | `main` (ou `master` se for a existente) | automática |
-| Branch de integração | `develop` | — |
-| Prefixo da tag | vazio → `1.2.0` | usa `v` se as tags existentes já usam `v` |
-| Arquivo de versão | `package.json`, `pyproject.toml`, `Cargo.toml`, `composer.json` ou `VERSION` | primeiro que existir; senão só tag |
-| Commit de bump | `chore: bump version to X.Y.Z` | — |
-| Changelog | **não** mantém `CHANGELOG.md`; notas vão na GitHub Release | `CHANGELOG=true` muda isso |
-| Feature → develop | via Pull Request | `FEATURE_MERGE=local` faz merge local |
+| Production branch | `main` (or `master` if that's what exists) | automatic |
+| Integration branch | `develop` | — |
+| Tag prefix | empty → `1.2.0` | uses `v` if existing tags already use `v` |
+| Version file | `package.json`, `pyproject.toml`, `Cargo.toml`, `composer.json` or `VERSION` | first one found; otherwise tag only |
+| Bump commit | `chore: bump version to X.Y.Z` | — |
+| Changelog | does **not** maintain `CHANGELOG.md`; notes go in the GitHub Release | `CHANGELOG=true` changes this |
+| Feature → develop | via Pull Request | `FEATURE_MERGE=local` merges locally |
 
-Se existir um arquivo **`.gitflow`** na raiz (formato `CHAVE=valor`, commitado para o time todo), ele manda. Detalhes e exemplo em `references/conventions.md`. Se o time ainda não tem, ofereça criá-lo no setup.
+If a **`.gitflow`** file exists at the repo root (`KEY=value` format, committed so the whole team shares it), it wins. Details and an example in `references/conventions.md`. If the team doesn't have one yet, offer to create it during setup.
 
-Notação nos comandos: `<MAIN>`, `<DEV>`, `<TAG>` = `<prefixo>X.Y.Z`. Branches `release/` e `hotfix/` **nunca** levam o prefixo `v`.
+Notation in commands: `<MAIN>`, `<DEV>`, `<TAG>` = `<prefix>X.Y.Z`. `release/` and `hotfix/` branches **never** carry the `v` prefix.
 
-## Escolher a versão (SemVer)
+## Choosing the version (SemVer)
 
-Pergunte a versão alvo se o usuário não disser; sugira com base nos commits (o script já dá uma sugestão):
+Ask for the target version if the user doesn't give one; suggest it from the commits (the script already prints a suggestion):
 
-- **MAIOR** (`X+1.0.0`): breaking change (`!` no tipo ou `BREAKING CHANGE:` no corpo)
-- **MENOR** (`X.Y+1.0`): funcionalidade nova (`feat`), PATCH zera
-- **PATCH** (`X.Y.Z+1`): correção (`fix`) ou ajuste interno
+- **MAJOR** (`X+1.0.0`): breaking change (`!` after the type or `BREAKING CHANGE:` in the body)
+- **MINOR** (`X.Y+1.0`): new feature (`feat`); PATCH resets to 0
+- **PATCH** (`X.Y.Z+1`): fix (`fix`) or internal tweak
 
-A sugestão é heurística; o usuário decide. Em `0.y.z` o SemVer permite quebras a qualquer momento, então confirme.
+The suggestion is a heuristic; the user decides. In `0.y.z` SemVer allows breaking changes at any time, so confirm.
 
-## Checklist de release (copie e marque)
+## Release checklist (copy and tick off)
 
 ```
 Release X.Y.Z:
-- [ ] Diagnóstico ok (árvore limpa, develop atualizada)
-- [ ] release/X.Y.Z criada a partir da develop
-- [ ] Bump no arquivo de versão + commit
-- [ ] (homologação / correções na release, se houver)
-- [ ] Merge --no-ff em main
-- [ ] Tag anotada na main
-- [ ] Merge da release e da tag em develop
-- [ ] Branch release local apagada
-- [ ] Push main/develop/tag (só se pedido)
-- [ ] GitHub Release (opcional, só se pedido)
+- [ ] Diagnosis ok (clean tree, develop up to date)
+- [ ] release/X.Y.Z created from develop
+- [ ] Version bump in the version file + commit
+- [ ] (staging / fixes on the release, if any)
+- [ ] --no-ff merge into main
+- [ ] Annotated tag on main
+- [ ] Release and tag merged into develop
+- [ ] Local release branch deleted
+- [ ] Push main/develop/tag (only if asked)
+- [ ] GitHub Release (optional, only if asked)
 ```
 
-## Fluxo: Feature → develop
+## Flow: Feature → develop
 
-Criar:
+Start:
 
 ```bash
 git checkout <DEV> && git pull origin <DEV>
-git checkout -b feature/<nome-em-kebab-case>
+git checkout -b feature/<name-in-kebab-case>
 ```
 
-Finalizar — caminho usual (`FEATURE_MERGE=pr`): publicar a branch (com autorização) e abrir **PR para `<DEV>`**. Equivalente local (`FEATURE_MERGE=local`):
+Finish — usual path (`FEATURE_MERGE=pr`): publish the branch (with permission) and open a **PR into `<DEV>`**. Local equivalent (`FEATURE_MERGE=local`):
 
 ```bash
 git checkout <DEV> && git pull origin <DEV>
-git merge --no-ff feature/<nome>
-git branch -d feature/<nome>        # se o PR foi squash: -D (confirmar)
+git merge --no-ff feature/<name>
+git branch -d feature/<name>        # if the PR was squashed: -D (confirm)
 ```
 
-## Fluxo: Release start
+## Flow: Release start
 
 ```bash
 git checkout <DEV> && git pull origin <DEV>
 git checkout -b release/X.Y.Z <DEV>
-# bump do arquivo de versão para X.Y.Z (ver references/conventions.md, "Como fazer o bump")
-git add <arquivo-de-versao> [lockfile]
+# bump the version file to X.Y.Z (see references/conventions.md, "How to bump")
+git add <version-file> [lockfile]
 git commit -m "chore: bump version to X.Y.Z"
 ```
 
-Correções de homologação entram como commits na própria `release/X.Y.Z` (nada de features novas). Não é obrigatório publicar a `release/` se o finish vier na sequência.
+Staging fixes go in as commits on `release/X.Y.Z` itself (no new features). Publishing the `release/` branch is optional if you finish right away.
 
-## Fluxo: Release finish
+## Flow: Release finish
 
-Equivale ao `git flow release finish`:
+Equivalent to `git flow release finish`:
 
 ```bash
-# 1. main recebe a release
+# 1. main receives the release
 git checkout <MAIN> && git pull origin <MAIN>
 git merge --no-ff release/X.Y.Z -m "Merge branch 'release/X.Y.Z'"
 
-# 2. tag anotada no merge commit da main
+# 2. annotated tag on the merge commit of main
 git tag -a <TAG> -m "Release X.Y.Z"
 
-# 3. develop recebe a release e a tag
+# 3. develop receives the release and the tag
 git checkout <DEV>
 git merge --no-ff release/X.Y.Z -m "Merge branch 'release/X.Y.Z'"
 git merge <TAG> -m "Merge tag '<TAG>' into <DEV>"
 
-# 4. limpar
+# 4. clean up
 git branch -d release/X.Y.Z
 ```
 
-Se `main`/`develop` são **protegidas** (push direto bloqueado), use o fluxo por PR em `references/release-and-hotfix.md`.
+If `main`/`develop` are **protected** (direct push blocked), use the PR flow in `references/release-and-hotfix.md`.
 
-## Push e GitHub Release
+## Push and GitHub Release
 
-Só após confirmação explícita:
+Only after explicit confirmation:
 
 ```bash
 git push origin <MAIN> <DEV>
 git push origin <TAG>
-gh release create <TAG> --title "<TAG>" --notes "- …"   # opcional
+gh release create <TAG> --title "<TAG>" --notes "- …"   # optional
 ```
 
-Para as notas, gere um rascunho com `git log --no-merges --pretty='- %s' <tag-anterior>..<TAG>`, mostre ao usuário e só então publique. Se `CHANGELOG=true`, atualize o `CHANGELOG.md` **dentro da `release/`**, antes do commit de bump.
+For the notes, draft them with `git log --no-merges --pretty='- %s' <previous-tag>..<TAG>`, show them to the user and publish only then. If `CHANGELOG=true`, update `CHANGELOG.md` **inside the `release/` branch**, before the bump commit.
 
 ## Hotfix
 
-Resumo: `hotfix/X.Y.Z` nasce da `main` (PATCH+1), merge `--no-ff` na `main`, tag anotada, merge na `develop` (ou na `release/` aberta, se houver). Passo a passo completo em `references/release-and-hotfix.md`.
+Summary: `hotfix/X.Y.Z` is created from `main` (PATCH+1), `--no-ff` merge into `main`, annotated tag, merge into `develop` (or into the open `release/` branch, if there is one). Full walkthrough in `references/release-and-hotfix.md`.
 
-## Depois da release
+## After the release
 
-Lembre o usuário (não execute sozinho): deploy/CI que segue `main` ou a tag, variáveis de ambiente de produção, e migrações de banco, se houve mudança de schema.
+Remind the user (don't do it yourself): deploy/CI that follows `main` or the tag, production environment variables, and database migrations if the schema changed.
 
-## Não fazer
+## Don't
 
-- Criar tag leve (`git tag` sem `-a`) ou tag na `release/`
-- Mergear `feature/*` direto na `main`
-- Mudar o prefixo de tag (`v` ↔ sem `v`) no meio do histórico sem o time decidir
-- Instalar/depender da CLI `git flow`
-- Reescrever histórico publicado de `main`/`develop`
+- Create lightweight tags (`git tag` without `-a`) or tag the `release/` branch
+- Merge `feature/*` straight into `main`
+- Change the tag prefix (`v` ↔ none) mid-history without the team deciding
+- Install or depend on the `git flow` CLI
+- Rewrite published history of `main`/`develop`
 
-## Referências desta skill
+## References in this skill
 
-- `references/setup.md` — setup do zero: criar `develop`, tag base, `.gitflow`, proteção de branches, CI
-- `references/conventions.md` — arquivo `.gitflow`, bump por tipo de projeto, mensagens de commit
-- `references/release-and-hotfix.md` — hotfix completo, release por PR (branches protegidas), conflitos e recuperação de erros
-- `scripts/gitflow-status.sh` — diagnóstico somente leitura
+- `references/setup.md` — setup from scratch: create `develop`, base tag, `.gitflow`, branch protection, CI
+- `references/conventions.md` — the `.gitflow` file, bump per project type, commit messages
+- `references/release-and-hotfix.md` — full hotfix, release via PR (protected branches), conflicts and error recovery
+- `scripts/gitflow-status.sh` — read-only diagnosis

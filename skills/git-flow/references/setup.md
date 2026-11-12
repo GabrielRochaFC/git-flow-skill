@@ -1,77 +1,77 @@
-# Setup do Git Flow em um repositório
+# Setting up Git Flow in a repository
 
-Use quando `scripts/gitflow-status.sh` apontar pendências (sem repo, sem commits, sem `develop`, sem tag base, sem `.gitflow`). Conduza **em ordem**, parando para perguntar onde indicado. Tudo que mexe no remoto (`push`, proteção de branch, mudar branch padrão) exige confirmação explícita.
+Use this when `scripts/gitflow-status.sh` reports pending items (no repo, no commits, no `develop`, no base tag, no `.gitflow`). Go **in order**, stopping to ask where indicated. Anything that touches the remote (`push`, branch protection, changing the default branch) needs explicit confirmation.
 
-Resumo da conversa a ter com o usuário (uma pergunta curta por vez, só o que faltar):
+Conversation to have with the user (one short question at a time, only what's missing):
 
-1. Qual é a branch de produção? (detectada: `main` ou `master`)
-2. Prefixo de tag: `1.2.0` ou `v1.2.0`?
-3. Onde fica a versão do projeto? (detectado: `package.json`, etc., ou só tag)
-4. Features entram na `develop` por Pull Request ou merge local?
-5. Mantém `CHANGELOG.md` ou as notas ficam na GitHub Release?
+1. Which branch is production? (detected: `main` or `master`)
+2. Tag prefix: `1.2.0` or `v1.2.0`?
+3. Where does the project version live? (detected: `package.json`, etc., or tag only)
+4. Do features reach `develop` through a Pull Request or a local merge?
+5. Keep a `CHANGELOG.md`, or keep the notes in the GitHub Release?
 
 ---
 
-## 1. Sem repositório
+## 1. No repository
 
-Só se o usuário confirmar que quer versionar esta pasta:
+Only if the user confirms they want to version this folder:
 
 ```bash
 git init -b main
-git add <arquivos-do-projeto>     # revisar o que entra; respeitar .gitignore
+git add <project-files>           # review what goes in; respect .gitignore
 git commit -m "chore: initial commit"
 ```
 
-Se tiver remote para configurar: `git remote add origin <url>` (e `git push -u origin main` só com autorização).
+If there's a remote to configure: `git remote add origin <url>` (and `git push -u origin main` only with permission).
 
-## 2. Repositório sem commits
+## 2. Repository with no commits
 
-`develop` não pode nascer de uma branch vazia. Faça (com autorização) um commit inicial como acima antes de continuar.
+`develop` can't branch off an empty history. Make an initial commit (with permission) as above before continuing.
 
-## 3. Branch de produção
+## 3. Production branch
 
-- Existe `main` ou `master`: use a que existe; registre em `MAIN_BRANCH` no `.gitflow`.
-- A branch atual tem outro nome (ex.: `trunk`, `dev`): pergunte qual será a de produção. **Não renomeie** branches sem o usuário pedir (`git branch -m <antigo> main` e, se já estiver no remoto, avisar que o time precisa atualizar clones).
+- `main` or `master` exists: use it and record it as `MAIN_BRANCH` in `.gitflow`.
+- The current branch has another name (e.g. `trunk`, `dev`): ask which one will be production. **Don't rename** branches unless the user asks (`git branch -m <old> main`; if it's already on the remote, warn that the team must update their clones).
 
-## 4. Criar a `develop`
+## 4. Create `develop`
 
-Caso A — não existe local nem remota:
+Case A — it exists neither locally nor remotely:
 
 ```bash
 git checkout <MAIN>
-git pull origin <MAIN>          # se houver remote
+git pull origin <MAIN>          # if there is a remote
 git checkout -b develop <MAIN>
-# com autorização:
+# with permission:
 git push -u origin develop
 ```
 
-Caso B — existe só no remoto (colega já criou):
+Case B — it exists only on the remote (a teammate created it):
 
 ```bash
 git fetch origin
-git checkout -b develop origin/develop      # ou: git switch develop
+git checkout -b develop origin/develop      # or: git switch develop
 ```
 
-Caso C — existe local mas sem upstream: `git push -u origin develop` (com autorização).
+Case C — it exists locally with no upstream: `git push -u origin develop` (with permission).
 
-Se `develop` já existir mas estiver **atrás** da `main` (ex.: hotfix sem back-merge): mostre `git log --oneline develop..main`, explique e proponha `git checkout develop && git merge --no-ff main` (confirmar antes; pode haver conflito).
+If `develop` exists but is **behind** `main` (e.g. a hotfix with no back-merge): show `git log --oneline develop..main`, explain it, and propose `git checkout develop && git merge --no-ff main` (confirm first; conflicts are possible).
 
-## 5. Tag base e versão
+## 5. Base tag and version
 
-Sem nenhuma tag SemVer, o primeiro release não tem de onde partir. Pergunte e proponha:
+With no SemVer tag at all, the first release has nothing to start from. Ask and propose:
 
-- Há versão no arquivo (ex.: `package.json` com `0.3.0`)? Proponha tag base igual a ela **na `main`**:
+- Is there a version in a file (e.g. `package.json` with `0.3.0`)? Propose a base tag equal to it **on `main`**:
   ```bash
-  git tag -a <prefixo>0.3.0 -m "Release 0.3.0" <MAIN>
+  git tag -a <prefix>0.3.0 -m "Release 0.3.0" <MAIN>
   ```
-- Não há versão em lugar nenhum: proponha `0.1.0` (projeto novo) ou `1.0.0` (já em produção) e, se existir arquivo de versão, alinhe com um commit `chore: bump version to X.Y.Z`.
-- Empurrar a tag só com autorização: `git push origin <tag>`.
+- No version anywhere: propose `0.1.0` (new project) or `1.0.0` (already in production) and, if there is a version file, align it with a `chore: bump version to X.Y.Z` commit.
+- Push the tag only with permission: `git push origin <tag>`.
 
-Já tem tags no repo? **Respeite o padrão existente** (com ou sem `v`) e registre em `TAG_PREFIX`.
+Repo already has tags? **Respect the existing pattern** (with or without `v`) and record it in `TAG_PREFIX`.
 
-## 6. Arquivo `.gitflow`
+## 6. The `.gitflow` file
 
-Ofereça criar na raiz com as respostas do usuário (modelo e todas as chaves em `conventions.md`). Ele deve ser **commitado na `develop`** para o time todo usar as mesmas convenções:
+Offer to create it at the root with the user's answers (template and all keys in `conventions.md`). It should be **committed to `develop`** so the whole team uses the same conventions:
 
 ```bash
 git checkout <DEV>
@@ -79,24 +79,24 @@ git add .gitflow
 git commit -m "chore: add git flow conventions"
 ```
 
-## 7. Documentar para o time (opcional)
+## 7. Document it for the team (optional)
 
-Ofereça adicionar ao `README.md`/`CONTRIBUTING.md` (ou `AGENTS.md`/`CLAUDE.md`) um bloco curto:
+Offer to add a short block to `README.md`/`CONTRIBUTING.md` (or `AGENTS.md`/`CLAUDE.md`):
 
 ```markdown
-## Fluxo de branches (Git Flow)
-- `main` = produção (cada commit é uma versão, com tag X.Y.Z) · `develop` = integração
-- Features: `feature/<nome>` a partir da `develop`, PR para `develop`
-- Releases: `release/X.Y.Z` a partir da `develop`; merge na `main` + tag + volta para `develop`
-- Hotfix: `hotfix/X.Y.Z` a partir da `main`; merge na `main` + tag + `develop`
-- Versionamento SemVer; convenções em `.gitflow`
+## Branching (Git Flow)
+- `main` = production (every commit is a version, tagged X.Y.Z) · `develop` = integration
+- Features: `feature/<name>` from `develop`, PR into `develop`
+- Releases: `release/X.Y.Z` from `develop`; merge into `main` + tag + back into `develop`
+- Hotfix: `hotfix/X.Y.Z` from `main`; merge into `main` + tag + `develop`
+- SemVer versioning; conventions in `.gitflow`
 ```
 
-## 8. Proteção de branches e PRs (recomendado, só com autorização)
+## 8. Branch protection and PRs (recommended, only with permission)
 
-Via interface: *Settings → Branches → Branch protection rules* para `main` e `develop`: exigir Pull Request, bloquear force-push e exclusão de branch, exigir checks de CI.
+Through the UI: *Settings → Branches → Branch protection rules* for `main` and `develop`: require a Pull Request, block force-push and branch deletion, require CI checks.
 
-Via GitHub CLI (precisa de `gh` autenticado e permissão de admin; troque `OWNER/REPO`):
+Through the GitHub CLI (needs an authenticated `gh` and admin permission; replace `OWNER/REPO`):
 
 ```bash
 gh api -X PUT repos/OWNER/REPO/branches/main/protection \
@@ -107,14 +107,14 @@ gh api -X PUT repos/OWNER/REPO/branches/main/protection \
 EOF
 ```
 
-Repita para `develop`. **Atenção:** com a `main` protegida por PR, o `release finish` local não consegue dar push; use o fluxo por PR de `release-and-hotfix.md` e registre isso em `.gitflow` (`PROTECTED_BRANCHES=true`).
+Repeat for `develop`. **Heads up:** with `main` protected by PR, a local `release finish` can't push; use the PR flow in `release-and-hotfix.md` and record it in `.gitflow` (`PROTECTED_BRANCHES=true`).
 
-Dica: se quiser que PRs abram contra a `develop` por padrão, o admin pode trocar a branch padrão do repositório para `develop` (Settings → General → Default branch). Pergunte; não faça por conta própria.
+Tip: if PRs should open against `develop` by default, an admin can switch the repository's default branch to `develop` (Settings → General → Default branch). Ask; don't do it on your own.
 
 ## 9. CI/CD
 
-Sugira (sem aplicar sozinho) que os workflows rodem em `push` e `pull_request` para `main`, `develop`, `release/**` e `hotfix/**`, e que o deploy de produção siga a `main` ou a tag `X.Y.Z`.
+Suggest (without applying it yourself) that workflows run on `push` and `pull_request` for `main`, `develop`, `release/**` and `hotfix/**`, and that the production deploy follows `main` or the `X.Y.Z` tag.
 
-## 10. Conclusão do setup
+## 10. Wrapping up
 
-Rode `bash scripts/gitflow-status.sh` de novo e confirme que não há pendências estruturais. Resuma ao usuário o que foi criado e o que ficou pendente (ex.: push, proteção de branch).
+Run `bash scripts/gitflow-status.sh` again and confirm there are no structural pending items. Summarize for the user what was created and what is still pending (e.g. push, branch protection).

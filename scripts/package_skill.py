@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Gera dist/git-flow.zip (e dist/git-flow.skill, o mesmo conteúdo) a partir de skills/git-flow.
+"""Builds dist/git-flow.zip (and dist/git-flow.skill, same contents) from skills/git-flow.
 
-O zip tem a pasta `git-flow/` na raiz, com SKILL.md dentro, que é o formato
-esperado por quem instala a skill manualmente (upload ou cópia de pasta).
-Somente biblioteca padrão. Uso: python3 scripts/package_skill.py
+The zip has the `git-flow/` folder at its root with SKILL.md inside, which is the
+format expected for manual installs (upload or copying a folder).
+Standard library only. Usage: python3 scripts/package_skill.py
 """
 import os
 import shutil
@@ -20,7 +20,7 @@ IGNORE_FILES = {".DS_Store"}
 
 def main() -> int:
     if not os.path.isfile(os.path.join(SRC, "SKILL.md")):
-        print(f"ERRO: {SRC}/SKILL.md não encontrado", file=sys.stderr)
+        print(f"ERROR: {SRC}/SKILL.md not found", file=sys.stderr)
         return 1
     os.makedirs(DIST, exist_ok=True)
     out = os.path.join(DIST, f"{SKILL_NAME}.zip")
@@ -37,8 +37,8 @@ def main() -> int:
                 with open(path, "rb") as fh:
                     z.writestr(info, fh.read())
     shutil.copyfile(out, os.path.join(DIST, f"{SKILL_NAME}.skill"))
-    print(f"gerado: {out}")
-    print(f"gerado: {os.path.join(DIST, SKILL_NAME + '.skill')}")
+    print(f"built: {out}")
+    print(f"built: {os.path.join(DIST, SKILL_NAME + '.skill')}")
     return 0
 
 
