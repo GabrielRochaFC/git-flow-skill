@@ -1,0 +1,12 @@
+{
+  "name": "git-flow",
+  "description": "Git Flow com versionamento SemVer: feature, release, hotfix, tags anotadas e setup de branches (develop, tag base, .gitflow).",
+  "version": "1.0.0",
+  "author": {
+    "name": "Gabriel Rocha"
+  },
+  "homepage": "https://github.com/GabrielRochaFC/git-flow-skill",
+  "repository": "https://github.com/GabrielRochaFC/git-flow-skill",
+  "license": "MIT",
+  "keywords": ["git", "git-flow", "semver", "release", "hotfix", "versionamento"]
+}
